@@ -1,0 +1,119 @@
+---
+title: "Multiple Regression and Backward Selection"
+output: html_notebook
+---
+
+
+
+```{r}
+library(readr)
+Data= read_csv("50_Startups.csv")
+View(Data)
+```
+
+```{r}
+Data
+```
+
+```{r}
+# Encoding categorical data
+# factor function converts categorical to numerical but sees the values as factors
+
+Data$State=factor(Data$State,
+                  levels=c("New York","California","Florida"),
+                  labels = c(1,2,3))
+```
+
+
+```{r}
+# split the data
+library(caTools)
+```
+
+
+```{r}
+set.seed(123) # random state
+split = sample.split(Data$Profit, SplitRatio = 0.8)
+#specifing the trainig set. True is for the trainig set
+training_set = subset(Data,split==TRUE)
+test_set = subset(Data,split==FALSE)
+```
+
+
+```{r}
+#Fit the Multiple Linear Regressor
+regressor = lm( formula = Profit ~ . , data=training_set)
+
+```
+
+
+```{r}
+summary(regressor)
+```
+
+```{r}
+# Predict the test results
+y_pred = predict(regressor, newdata = test_set)
+y_pred
+```
+
+# Backward Elimination, Step by Step
+Drop independent variable that have a pvalue greater than 0.05%
+
+STEPS
+1.Select a significance level to stay in the model (S.L = 0.05)
+2.Fit the full model with all possible predictors
+3.Consider the predictor with the highest p-values ie above 0.05
+4.Remove the predictor
+5.Fit the model without the prdictor
+
+Iterate steps 3 ,4 and 5 until non of the predictor p_values is greater than 0.05.
+```{r}
+# We can see from the result above only the R and D spend as a significant impact on the profit oof each startup.
+# Buil the optimal model using backward elimination step by step
+regressor1 = lm( formula = Profit ~ `R&D Spend` + Administration + `Marketing Spend` + State , data=Data)
+
+summary(regressor1)
+```
+
+
+```{r}
+# The highest p_value from the result above is in the state- Califonia, so we would take out the state since Florida is also not significant.
+regressor2 = lm( formula = Profit ~ `R&D Spend` + Administration + `Marketing Spend`, data=Data)
+
+summary(regressor2)
+
+```
+
+
+```{r}
+# The next predictor to remove is Administration
+regressor3 = lm( formula = Profit ~ `R&D Spend` + `Marketing Spend` , data=Data)
+
+summary(regressor3)
+```
+
+
+```{r}
+# The last one is the Marketing Spend, even though the p-value is small and almost at 0.05 we would remove it because it doesnt meet the mark
+regressor3 = lm( formula = Profit ~ `R&D Spend`, data=Data)
+
+summary(regressor3)
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
